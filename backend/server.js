@@ -3,6 +3,7 @@ import connectDB from "./config/dbConnection.js";
 import cors from "cors";
 import errorHandling from "./middleware/errorHandling.js";
 import authRoutes from "./routes/auth.js";
+import songRouter from "./routes/songs.js";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/auth", authRoutes);
+app.use("/songs", songRouter);
 app.use(errorHandling);
 
 app.listen(PORT, () => {
