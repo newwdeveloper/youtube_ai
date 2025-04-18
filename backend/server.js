@@ -4,6 +4,7 @@ import cors from "cors";
 import errorHandling from "./middleware/errorHandling.js";
 import authRoutes from "./routes/auth.js";
 import songRouter from "./routes/songs.js";
+import feedbackRouter from "./routes/feedback.js";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/songs", songRouter);
+app.use("/feedback", feedbackRouter);
 app.use(errorHandling);
 
 app.listen(PORT, () => {
