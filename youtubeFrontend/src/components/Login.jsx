@@ -1,13 +1,17 @@
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext"; // Import useAuth hook
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // Added loading state
+  const [showPassword, setShowPassword] = useState(false); // Toggle password visibility
   const navigate = useNavigate();
+  const { login } = useAuth(); // Access login function from context
 
   // Validate individual field
   const validateField = (field, value) => {
@@ -55,16 +59,25 @@ const Login = () => {
     }
 
     try {
+      setLoading(true); // Start loading state
+
       const res = await axios.post("http://localhost:5000/auth/login", {
         email,
         password,
       });
 
-      localStorage.setItem("token", res.data.token);
+      // Use login function from context to update user state
+      login(res.data.username, res.data.token); // Pass username and token
+
       toast.success("Login successful!");
+
+      // Redirect after a short delay
       setTimeout(() => navigate("/"), 1500);
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false); // Stop loading state
     }
   };
 
@@ -99,14 +112,23 @@ const Login = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
-            <input
-              type="password"
-              className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              }`}
-              value={password}
-              onChange={(e) => handleChange("password", e.target.value)}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                }`}
+                value={password}
+                onChange={(e) => handleChange("password", e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-3"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-sm text-red-500 mt-1">{errors.password}</p>
             )}
@@ -117,19 +139,20 @@ const Login = () => {
               <input type="checkbox" className="mr-2" />
               Remember me
             </label>
-            <a
-              href="/forgot-password"
+            <Link
+              to="/forgetPassword"
               className="text-blue-600 hover:underline"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition"
+            disabled={loading} // Disable button during loading
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
       </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext"; // Import useAuth hook
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -9,6 +10,7 @@ const Signup = () => {
   const [name, setName] = useState("");
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { login } = useAuth(); // Access login function from context
 
   const validateField = (field, value) => {
     let error = "";
@@ -50,13 +52,20 @@ const Signup = () => {
     }
 
     try {
-      await axios.post("http://localhost:5000/auth/signup", {
+      const res = await axios.post("http://localhost:5000/auth/signup", {
         email,
         password,
         name,
       });
-      toast.success("Signup successful! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 1500);
+
+      // After successful signup, log the user in by calling login() from context
+      login(res.data.username, res.data.token); // Pass username and token to login
+
+      toast.success("Signup successful! Redirecting to home...");
+      setTimeout(() => {
+        navigate("/"); // Navigate to the home page (or wherever you want)
+      }, 1500);
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       toast.error("Signup failed. Please try again.");
     }
